@@ -1,0 +1,29 @@
+﻿@inject DialogService DialogService
+
+<div>
+    <div><TaskControl Task="Data" /></div>
+    <RadzenButton Click="OnComplete" Text="Complete" />
+    <RadzenButton Click="OnSkip" Text="Skip" />
+    <RadzenButton Click="OnDelete" Text="Delete" />
+    <RadzenButton Click="OnCancel" Text="Cancel" />
+</div>
+@code {
+    [Parameter] public TaskItem Data { get; set; }
+
+
+    private void OnDelete() {
+        DialogService.Close(true);
+    }
+
+    private void OnComplete() {
+        DialogService.Close(false);
+    }
+
+    private void OnSkip() {
+        DialogService.Close("Skip");
+    }
+
+    private void OnCancel() {
+        DialogService.Close(null);
+    }
+}

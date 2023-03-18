@@ -1,0 +1,18 @@
+﻿<div class="AddEditBorder">
+    <SfTextBox @bind-Value=@CurrentTodo.Name Placeholder="Name" FloatLabelType="FloatLabelType.Auto" />
+    <SfDatePicker @bind-Value=CurrentTodo.DueDate Placeholder="Due Date" FloatLabelType="FloatLabelType.Auto" />
+    <SfNumericTextBox Placeholder="Recurring" FloatLabelType="FloatLabelType.Auto" @bind-Value=CurrentTodo.DaysBetween />
+    <SfTextBox Placeholder="Notes" FloatLabelType="FloatLabelType.Auto" Multiline=true @bind-Value=CurrentTodo.Notes />
+    <SfNumericTextBox @bind-Value=CurrentTodo.Priority Placeholder="Priority" FloatLabelType="FloatLabelType.Auto" />
+    @if(!string.IsNullOrEmpty(Error)) {
+        <div style="color:red">@Error</div>
+    }
+    <SfButton Content="Save" OnClick="Save" />
+</div>
+
+@code {
+    [Parameter] public Todo CurrentTodo { get; set; }
+    [Parameter] public string Error { get { return error; } set { error = value; StateHasChanged(); } }
+    string error;
+    [Parameter] public Action Save {get; set;}
+}

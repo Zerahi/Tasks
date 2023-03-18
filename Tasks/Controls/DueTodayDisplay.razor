@@ -1,0 +1,27 @@
+﻿@if (DueToday.Count > 0) { 
+    <div>
+        <h3>Today</h3>
+        <div class="TodayBorder">
+            @foreach (var todo in DueToday) {
+                <TodoDisplay CurrentTodo=todo />
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public List<Todo> TaskList { get; set; }
+    List<Todo> DueToday = new();
+
+    protected override void OnAfterRender(bool firstRender) {
+        if (firstRender) {
+            DueToday.Clear();
+            DueToday.AddRange( TaskList.Where(x => x.DueDate.Date == DateTime.Today.Date).OrderByDescending(x => x.Priority).ToList());
+            StateHasChanged();
+        }
+    }
+
+    public void Refresh() {
+        OnAfterRender(true);
+    }
+}

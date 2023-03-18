@@ -1,0 +1,58 @@
+﻿@inject DialogService DialogService
+
+@if (Loaded) {<RadzenTemplateForm TItem="TaskItem" Data="@AddItem" Submit=@OnSubmit>
+    <div class="row" style="margin-bottom: 16px">
+        <div class="col">
+            <RadzenTextBox @bind-Value="@AddItem.Name" Name="Name" Placeholder="Name..."/>
+            <RadzenRequiredValidator Text="Title is required" Component="Name" />
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: 16px">
+        <div class="col">
+            <RadzenDatePicker @bind-Value="@Start" Name="Start" Placeholder="Date..." DateFormat="MM/dd/yyyy"/>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: 16px">
+        <div class="col">
+            <RadzenNumeric @bind-Value="@AddItem.RepeatDays" Name="Repeat" Placeholder="Repeat..." />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Add" />
+        </div>
+    </div>
+</RadzenTemplateForm>
+} else { <div>Loading... </div>}
+@code {
+    [Parameter] public DateTime Start { get; set; }
+
+    TaskItem AddItem;
+    private bool Loaded = false;
+
+    protected override void OnAfterRender(bool firstRender) {
+        if (firstRender) {
+            if (DataSet.TaskItems.Count > 0) {
+                int newID = -1;
+                List<int> ids = DataSet.TaskItems.Select(x => x.ID).ToList();
+                foreach (int i in ids) {
+                    if (!ids.Contains(i + 1)) {
+                        newID = i + 1;
+                        break;
+                    }
+                }
+                AddItem = new TaskItem(newID);
+            } else {
+                AddItem = new TaskItem(0);
+            }
+            Loaded = true;
+            StateHasChanged();
+        }
+    }
+
+    void OnSubmit(TaskItem model) {
+        model.Date = Start;
+        DialogService.Close(model);
+    }
+}

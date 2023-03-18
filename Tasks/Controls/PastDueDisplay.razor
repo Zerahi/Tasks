@@ -1,0 +1,28 @@
+﻿@if (PastDue.Count > 0) {
+    <div>
+    <h3>Past Due</h3>
+    <div class="PastBorder">
+            @foreach (var todo in PastDue) {
+            <TodoDisplay CurrentTodo=todo />
+        }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public List<Todo> TaskList { get; set; }
+    List<Todo> PastDue = new();
+
+
+    protected override void OnAfterRender(bool firstRender) {
+        if(firstRender) {
+            PastDue.Clear();
+            PastDue.AddRange(TaskList.Where(x => x.DueDate.Date < DateTime.Today.Date).OrderByDescending(x => x.Priority).ToList());
+            StateHasChanged();
+        }
+    }
+
+    public void Refresh() {
+        OnAfterRender(true);
+    }
+}

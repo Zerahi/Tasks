@@ -1,0 +1,135 @@
+﻿@page "/"
+
+<PageTitle>Tasks</PageTitle>
+
+@if (Loaded) {
+    <div class="indexWidth">
+        <div>
+            @if (Adding) {
+                <AddEditDisplay CurrentTodo=AddingTodo Save=SaveAdding Error=@AddingError />
+            }
+            <SfButton Content="@(Adding? "Cancel":"Add")" OnClick="() => {Adding = !Adding; StateHasChanged();}" />
+        </div>
+        <div class="IndexBorder">
+            <PastDueDisplay @ref=PastRef TaskList=Todos />
+            <DueTodayDisplay @ref=TodayRef TaskList=Todos />
+            <DueFutureDisplay @ref=FutureRef TaskList=Todos />
+        </div>
+    </div>
+} else {
+    <SfSpinner />
+}
+
+
+@code{               
+    bool Loaded;
+    bool Adding;
+    Todo AddingTodo = new() { DueDate = DateTime.Today };
+    List<Todo> Todos = new();
+    string AddingError;
+    PastDueDisplay PastRef;
+    DueTodayDisplay TodayRef;
+    DueFutureDisplay FutureRef;
+
+    public void DeleteTodo(Todo todo) {
+        ProgramsContext db = new();
+        var item = db.Todos.Find(todo.Id);
+        if (item != null) db.Remove(item);
+        db.SaveChanges();
+        var ex = Todos.SingleOrDefault(x => x.Id == todo.Id);
+        if (ex != null) Todos.Remove(ex);
+        Todos.Sort((x, y) => x.DueDate.CompareTo(y.DueDate));
+        Refresh();
+    }
+
+    public void CompleteTodo(Todo todo) {
+        if (todo.DaysBetween != null && todo.DaysBetween > 0) {
+            ProgramsContext db = new();
+            todo.DueDate = todo.DueDate.AddDays((int)todo.DaysBetween);
+            todo.DaysSkipped = null;
+            var item = db.Todos.Find(todo.Id);
+            if (item != null) {
+                item.DueDate = todo.DueDate;
+                item.DaysBetween = todo.DaysBetween;
+                item.DaysSkipped = todo.DaysSkipped;
+                db.SaveChanges();
+            }
+            Todos.Sort((x, y) => x.DueDate.CompareTo(y.DueDate));
+            Refresh();
+        } else {
+            DeleteTodo(todo);
+        }
+    }
+
+    public void SkipTodo(Todo todo) {
+        ProgramsContext db = new();
+        todo.DueDate = todo.DueDate.AddDays(1);
+        if (todo.DaysSkipped == null) todo.DaysSkipped = 1;
+        else todo.DaysSkipped += 1;
+        var item = db.Todos.Find(todo.Id);
+        if (item != null) {
+            item.DueDate = todo.DueDate;
+            item.DaysSkipped = todo.DaysSkipped;
+            db.SaveChanges();
+        }
+        Refresh();
+        Todos.Sort((x, y) => x.DueDate.CompareTo(y.DueDate));
+        Refresh();
+    }
+
+    public string SaveEdit(Todo todo) {
+        ProgramsContext db = new();
+        try {
+            var item = db.Todos.Find(todo.Id);
+            if (item != null) {
+                item.Name = todo.Name;
+                item.DueDate = todo.DueDate;
+                item.DaysBetween = todo.DaysBetween;
+                item.Notes = todo.Notes;
+                item.Priority = todo.Priority;
+                db.SaveChanges();
+            }
+            Todos.Sort((x, y) => x.DueDate.CompareTo(y.DueDate));
+            Refresh();
+            return null;
+        } catch (Exception e) {
+            return e.Message;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            AppData.Index = this;
+            AppData.StartTimer();
+            ProgramsContext db = new();
+            Todos.AddRange(await db.Todos.OrderBy(x => x.DueDate).ThenByDescending(x => x.Priority).ToListAsync());
+            Loaded = true;
+            StateHasChanged();
+        }
+    }
+
+    void SaveAdding() {
+        AddingError = null;
+        ProgramsContext db = new();
+        try {
+            db.Add(AddingTodo);
+            db.SaveChanges();
+            Todos.Add(AddingTodo);
+            Todos.Sort((x, y) => x.DueDate.CompareTo(y.DueDate));
+            AddingTodo = new() { DueDate = DateTime.Today };
+            Adding = false;
+            Refresh();
+        } catch (Exception e) {
+            AddingError = e.Message;
+        }
+    }
+
+    public void Refresh() {
+        InvokeAsync(() => {
+            StateHasChanged();
+            PastRef.Refresh();
+            TodayRef.Refresh();
+            FutureRef.Refresh();
+        });
+    }
+}

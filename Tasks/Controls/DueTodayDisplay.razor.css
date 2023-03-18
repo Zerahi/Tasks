@@ -1,0 +1,8 @@
+﻿.TodayBorder {
+    border: solid thin;
+    background-color: #b7ffb7ff;
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    gap: 5px;
+}

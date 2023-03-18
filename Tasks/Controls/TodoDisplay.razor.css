@@ -1,0 +1,12 @@
+﻿.TodoBorder {
+    border: solid thin;
+    background-color: #f5faff;
+    padding: 5px;
+    min-width: 300px;
+}
+.TodoBorderOver {
+    border: solid thin;
+    background-color: #ffafafff;
+    padding: 5px;
+    min-width: 300px;
+}

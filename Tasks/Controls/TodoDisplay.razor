@@ -1,0 +1,58 @@
+﻿@if (CurrentTodo != null) {
+    @if (Edit) {
+        <div class="TodoBorder">
+            <AddEditDisplay CurrentTodo=CurrentTodo Save=SaveEdit Error=@EditError />
+            <SfButton Content="Delete" OnClick=Delete />
+            <SfButton Content="Cancel" OnClick="() => {Edit = !Edit; StateHasChanged();}" />
+        </div>
+    } else {
+        <div class=@Css>
+            <div>@CurrentTodo.Name</div>
+            <div>Due @CurrentTodo.DueDate.ToLongDateString()</div>
+            @if (CurrentTodo.DaysBetween != null) {
+                <div>Recurring: @CurrentTodo.DaysBetween</div>
+            }
+            @if (CurrentTodo.DaysSkipped != null) {
+                <div style="color:red;">Days Skipped: @CurrentTodo.DaysSkipped</div>
+            }
+            <div>
+                @{
+                    <SfButton Content="Notes" OnClick="() => {ExpandedNotes = !ExpandedNotes; StateHasChanged();}" />
+                    if (ExpandedNotes) {
+                        <SfTextBox Multiline=true @bind-Value=CurrentTodo.Notes OnChange=SaveNotes />
+                    }
+                }
+            </div>
+            <SfButton Content="Edit" OnClick="() => {Edit = !Edit; StateHasChanged();}" />
+            <SfButton Content="Complete" OnClick="() =>  AppData.Index.CompleteTodo(CurrentTodo)" />
+            <SfButton Content="Skip" OnClick="() =>  AppData.Index.SkipTodo(CurrentTodo)" />
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public Todo CurrentTodo { get; set; }
+    bool ExpandedNotes;
+    bool Edit;
+    string? EditError;
+    string Css { get { return (CurrentTodo == null || CurrentTodo.DaysSkipped == null || CurrentTodo.DaysSkipped < 3) ? "TodoBorder" : "TodoBorderOver"; } }
+
+    void SaveNotes() {
+        ProgramsContext db = new();
+        var item = db.Todos.Find(CurrentTodo.Id);
+        if (item != null) item.Notes = CurrentTodo.Notes;
+        db.SaveChanges();
+    }
+
+    void SaveEdit() {
+        EditError = AppData.Index.SaveEdit(CurrentTodo);
+        if (EditError == null) Edit = false;
+        StateHasChanged();
+    }
+
+    void Delete() {
+        Edit = false;
+        StateHasChanged();
+        AppData.Index.DeleteTodo(CurrentTodo);
+    }
+}

@@ -1,0 +1,9 @@
+﻿.PastBorder {
+    border: solid thin;
+    border-color: darkred;
+    background-color: #ffa8a8;
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    gap: 5px;
+}

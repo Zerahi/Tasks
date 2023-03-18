@@ -1,0 +1,7 @@
+﻿.FutureBorder {
+    border: solid thin;
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    gap: 5px;
+}

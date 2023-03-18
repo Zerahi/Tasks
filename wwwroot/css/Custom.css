@@ -1,0 +1,19 @@
+﻿.tName {
+    font-size: 30px;
+}
+
+.tBorder {
+    border: solid;
+    border-width: .5px;
+    border-color:gray;
+    padding: 5px;
+}
+
+
+.tMargin {
+    margin:5px;
+}
+.tMarginBtn {
+    margin: 10px;
+    margin-top: 20px
+}

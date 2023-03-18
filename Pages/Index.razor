@@ -1,0 +1,83 @@
+﻿@page "/"
+@inject Blazored.Localisation.Services.IBrowserDateTimeProvider browserDateTimeProvider
+@inject DialogService DialogService
+
+
+<RadzenScheduler @ref="Sch" TItem="TaskItem" Data="DataSet.TaskItems" Style="        height: 100vh
+" StartProperty="Start" EndProperty="End" TextProperty="TextDisplay" SelectedIndex="0" SlotSelect=@OnSlotSelect AppointmentSelect=@OnItemSelected AppointmentRender=@OnTaskRender>
+    <RadzenDayView />
+    <RadzenWeekView />
+    <RadzenMonthView />
+</RadzenScheduler>
+
+@code{
+    RadzenScheduler<TaskItem> Sch;
+
+    protected override void OnAfterRender(bool firstRender) {
+        if (firstRender) {
+            Refresh();
+        }
+    }
+
+    void AutoRefresh() {
+        var timer = new Timer(new TimerCallback(_ => {
+            InvokeAsync(() => {
+                Refresh();
+            });
+        }), null, 600000, 600000);
+    }
+
+    void AddClicked() {
+        StateHasChanged();
+    }
+
+    void Refresh() {
+        DataSet.LoadItems();
+        StateHasChanged();
+        if (Sch != null) Sch.Reload();
+    }
+
+    async Task OnSlotSelect(SchedulerSlotSelectEventArgs args) {
+
+        TaskItem data = await DialogService.OpenAsync<AddAppointment>("Add Task",
+            new Dictionary<string, object> { { "Start", args.Start } });
+        if (data != null) {
+            DataSet.SaveItem(data);
+            Refresh();
+        }
+    }
+
+    async Task OnItemSelected(SchedulerAppointmentSelectEventArgs<TaskItem> args) {
+
+        object dataawait = await DialogService.OpenAsync<RemoveItem>("Remove Item", new Dictionary<string, object> { { "Data", args.Data } });
+        if (dataawait.GetType() == typeof(string) && (string)dataawait == "Skip") {
+            args.Data.Date = ((DateTime)args.Data.Date).AddDays(1);
+            if (args.Data.TimesSkipped == null) args.Data.TimesSkipped = 0;
+            args.Data.TimesSkipped += 1;
+            DataSet.SaveItem(args.Data);
+            Refresh();
+            return;
+        }
+        if ((bool)dataawait == true) {
+            DataSet.DeleteTask(args.Data);
+            Refresh();
+        } else if ((bool)dataawait == false) {
+            args.Data.Date = ((DateTime)args.Data.Date).AddDays(((int)args.Data.RepeatDays));
+            args.Data.TimesSkipped = null;
+            DataSet.SaveItem(args.Data);
+            Refresh();
+        }
+    }
+
+    void OnTaskRender(SchedulerAppointmentRenderEventArgs<TaskItem> args) {
+        // Never call StateHasChanged in AppointmentRender - would lead to infinite loop
+
+        if (((DateTime)args.Data.Date).Date == DateTime.Today) {
+            args.Attributes["style"] = "font-size:40px; padding:15px; background:forestgreen; line-height:1";
+        } else if (((DateTime)args.Data.Date).Date < DateTime.Today) {
+            args.Attributes["style"] = "font-size:40px; padding:15px; background:red; line-height:1";
+        } else {
+            args.Attributes["style"] = "font-size:40px; padding:15px; background:grey; line-height:1";
+        }
+    }
+}

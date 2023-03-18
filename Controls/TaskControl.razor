@@ -1,0 +1,27 @@
+﻿
+<div class="d-inline-flex">
+
+    @if (string.IsNullOrEmpty(Task.Name)) {
+        <RadzenTextBox @bind-Value="Task.Name" Placeholder="Name..." />
+    } else {
+        <div class="tName tMargin">@Task.Name</div>
+    }
+
+    @if (Task.Date == null) {
+        <RadzenDatePicker TValue="DateTime?" @bind-Value="Task.Date" Placeholder="Date..." />
+    } else {
+        <div class="tName tMargin">@(((DateTime)Task.Date).ToLongDateString())</div>
+    }
+
+    @if (Task.RepeatDays == null) {
+        <RadzenNumeric TValue="int?" @bind-Value="Task.RepeatDays" Placeholder="Repeat..." />
+    } else {
+        <div class="tName tMargin">@(Task.RepeatDays + " Days")</div>
+    }
+</div>
+
+
+
+@code {
+    [Parameter] public TaskItem Task { get; set; }
+}

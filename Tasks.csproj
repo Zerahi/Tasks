@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <UserSecretsId>6abcf2ab-48bf-4ce9-ba9d-941691b806c2</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.Localisation" Version="2.0.0" />
+    <PackageReference Include="Radzen.Blazor" Version="3.1.5" />
+  </ItemGroup>
+
+</Project>
